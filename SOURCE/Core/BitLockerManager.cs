@@ -831,6 +831,9 @@ namespace BitLockerManager
         /// <param name="certificateThumbprint">
         /// An array of strings that contains the list of valid certificates.
         /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/findvalidcertificates-win32-encryptablevolume
+        /// </remarks>
         public void FindValidCertificates(out string[] certificateThumbprint)
         {
             using (var inParams = _vol.GetMethodParameters("FindValidCertificates"))
@@ -852,6 +855,153 @@ namespace BitLockerManager
             }
         }
 
+        /// <summary>
+        /// Indicates the status of the encryption or decryption on the volume.
+        /// </summary>
+        /// <param name="conversionStatus">
+        /// Volume encryption or decryption status.
+        /// </param>
+        /// <param name="encryptionPercentage">
+        /// Percentage of the volume that is encrypted. This is an integer from 0 to 100 inclusive.
+        /// Due to rounding of numbers, an encryption percentage of 0 or 100 does not necessarily indicate that the disk is fully decrypted or
+        /// fully encrypted. Always use ConversionStatus to determine whether the disk is in fact fully decrypted or fully encrypted.</param>
+        /// <param name="encryptionFlags">
+        /// Flags that describe the encryption behavior.
+        /// A combination of 32 bits with following bits currently defined.
+        /// 0x00000001: Perform volume encryption in data-only encryption mode when starting new encryption process. If encryption has been paused
+        /// or stopped, calling the Encrypt method effectively resumes conversion and the value of this bit is ignored. This bit only has effect
+        /// when either the Encrypt or EncryptAfterHardwareTest methods start encryption from the fully decrypted state, decryption in progress state,
+        /// or decryption paused state. If this bit is zero, meaning that it is not set, when starting new encryption process, then full mode conversion will be performed.
+        /// 0x00000002: Perform on-demand wipe of the volume free space. Calling the Encrypt method with this bit set is only allowed when volume is not currently converting
+        /// or wiping and is in an "encrypted" state.
+        /// 0x00010000: Perform the requested operation synchronously. The call will block until requested operation has completed or was interrupted. This flag is
+        /// only supported with the Encrypt method. This flag can be specified when Encrypt is called to resume stopped or interrupted encryption or wiping or when
+        /// either encryption or wiping is in progress. This allows the caller to resume synchronously waiting until the process is completed or interrupted.
+        /// </param>
+        /// <param name="wipingStatus">
+        /// Free space wiping status.
+        /// </param>
+        /// <param name="wipingPercentage">
+        /// A value from 0 to 100 that specifies the percentage of free space that has been wiped.
+        /// </param>
+        /// <param name="precisionFactor">
+        /// A value from 0 to 4 that specifies the precision level
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getconversionstatus-win32-encryptablevolume
+        /// </remarks>
+        public void GetConversionStatus(
+            out ConversionStatus conversionStatus,
+            out uint encryptionPercentage,
+            out uint encryptionFlags,
+            out WipingStatus wipingStatus,
+            out uint wipingPercentage,
+            uint precisionFactor)
+        {
+            conversionStatus = 0;
+            encryptionPercentage = 0;
+            encryptionFlags = 0;
+            wipingStatus = 0;
+            wipingPercentage = 0;
+
+            using (var inParams = _vol.GetMethodParameters("GetConversionStatus"))
+            {
+                inParams["PrecisionFactor"] = precisionFactor;
+                using (var outParams = _vol.InvokeMethod("GetConversionStatus", inParams, null))
+                {
+                    var result = (uint)outParams["returnValue"];
+                    conversionStatus = (ConversionStatus)outParams["ConversionStatus"];
+                    encryptionPercentage = (uint)outParams["EncryptionPercentage"];
+                    encryptionFlags = (uint)outParams["EncryptionFlags"];
+                    wipingStatus = (WipingStatus)outParams["WipingStatus"];
+                    wipingPercentage = (uint)outParams["WipingPercentage"];
+
+                    switch (result)
+                    {
+                        case 0: //S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates the encryption algorithm and key size used on the volume.
+        /// </summary>
+        /// <param name="encryptionMethod">
+        /// An unsigned integer that specifies the encryption algorithm and key size used on the volume.
+        /// </param>
+        /// <param name="selfEncryptionDriveEncryptionMethod">
+        /// The encryption algorithm is configured on the self-encrypting drive. A null string means that either BitLocker is using software encryption or no encryption method is reported.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getencryptionmethod-win32-encryptablevolume
+        /// </remarks>
+        public void GetEncryptionMethod(out EncryptionMethod encryptionMethod, out string selfEncryptionDriveEncryptionMethod)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetEncryptionMethod"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetEncryptionMethod", inParams, null))
+                {
+                    var result = (uint)outParams["returnValue"];
+
+                    encryptionMethod = (EncryptionMethod)outParams["EncryptionMethod"];
+                    selfEncryptionDriveEncryptionMethod = (string)outParams["SelfEncryptionDriveEncryptionMethod"];
+
+                    switch (result)
+                    {
+                        case 0: //S_OK
+                            return;
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the name of the file that contains the external key, if this external key is saved to a file location by using the SaveExternalKeyToFile method.
+        /// This method is only applicable for key protectors of the type "External Key", "TPM And PIN And Startup Key", or "TPM And Startup Key".
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="filename">
+        /// A string that specifies the name with extension but without the file path, of the file that contains the external key.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getexternalkeyfilename-win32-encryptablevolume
+        /// </remarks>
+        public void GetExternalKeyFileName(string volumeKeyProtectorId, out string filename)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetExternalKeyFileName"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetExternalKeyFileName", inParams, null))
+                {
+                    var result = (uint)outParams["returnValue"];
+                    filename = (string)outParams["FileName"];
+                    switch (result)
+                    {
+                        case 0://S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\", "
+                                                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
 
     }
 }

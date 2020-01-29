@@ -57,8 +57,10 @@
   <ItemGroup>
     <Compile Include="API.cs" />
     <Compile Include="BitLockerManager.cs" />
+    <Compile Include="Enums\ConversionStatus.cs" />
     <Compile Include="Enums\EncryptionMethod.cs" />
     <Compile Include="Enums\ProtectionStatus.cs" />
+    <Compile Include="Enums\WipingStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
