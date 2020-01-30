@@ -60,9 +60,11 @@
     <Compile Include="Enums\CertificateType.cs" />
     <Compile Include="Enums\ConversionStatus.cs" />
     <Compile Include="Enums\EncryptionMethod.cs" />
+    <Compile Include="Enums\FVEMetadataVersion.cs" />
     <Compile Include="Enums\HardwareEncryptionStatus.cs" />
     <Compile Include="Enums\KeyProtectorFlag.cs" />
     <Compile Include="Enums\KeyProtectorType.cs" />
+    <Compile Include="Enums\LockStatus.cs" />
     <Compile Include="Enums\ProtectionStatus.cs" />
     <Compile Include="Enums\TestError.cs" />
     <Compile Include="Enums\TestStatus.cs" />

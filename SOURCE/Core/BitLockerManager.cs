@@ -1674,6 +1674,9 @@ namespace BitLockerManager
         /// <param name="keyProtectorType">
         /// Type of the key protector.
         /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectortype-win32-encryptablevolume
+        /// </remarks>
         public void GetKeyProtectorType(string volumeKeyProtectorId, out KeyProtectorType keyProtectorType)
         {
             using (var inParams = _vol.GetMethodParameters("GetKeyProtectorType"))
@@ -1704,8 +1707,223 @@ namespace BitLockerManager
             }
         }
 
+        /// <summary>
+        /// Indicates whether the contents of the volume are accessible from Windows.
+        /// </summary>
+        /// <param name="lockStatus">
+        /// Specifies whether the contents of the volume are accessible from Windows.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getlockstatus-win32-encryptablevolume
+        /// </remarks>
+        public void GetLockStatus(out LockStatus lockStatus)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetLockStatus"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetLockStatus", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    lockStatus = (LockStatus)outParams["LockStatus"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether the volume and its encryption key (if any) are secured.
+        /// Protection is off if a volume is unencrypted or partially encrypted, or if the volume's encryption key is available in the clear on the hard disk.
+        /// </summary>
+        /// <param name="protectionStatus">
+        /// Specifies whether the volume and the encryption key (if any) are secured.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getprotectionstatus-win32-encryptablevolume
+        /// </remarks>
+        public void GetProtectionStatus(out ProtectionStatus protectionStatus)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetProtectionStatus"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetProtectionStatus", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    protectionStatus = (ProtectionStatus)outParams["ProtectionStatus"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the number of reboots before protection will automatically be resumed.
+        /// </summary>
+        /// <param name="suspendCount">
+        /// An integer value from 0 to 15.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getsuspendcount-win32-encryptablevolume
+        /// </remarks>
+        public void GetSuspendCount(out uint suspendCount)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetSuspendCount"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetSuspendCount", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    suspendCount = (uint)outParams["SuspendCount"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070032: // ERROR_NOT_SUPPORTED
+                            throw new InvalidOperationException("Returned if the volume is not suspended or is not an OS volume.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the FVE metadata version of the volume.
+        /// </summary>
+        /// <param name="version">
+        /// Metadata version of the volume.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getversion-win32-encryptablevolume
+        /// </remarks>
+        public void GetVersion(out FVEMetadataVersion version)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetVersion"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetVersion", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    version = (FVEMetadataVersion)outParams["Version"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0xCCD802F: // E_INVALIDARG
+                            throw new InvalidOperationException("The value for the Version parameter is not valid.");
+                        case 0xD: // ERROR_INVALID_DATA
+                            throw new InvalidOperationException("The driver returned an unsupported data format.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates whether the volume is automatically unlocked when it is mounted (for example, when removable memory devices are connected to the computer).
+        /// </summary>
+        /// <param name="isAutoUnlockEnabled">
+        /// A Boolean value that is true if the external key used to automatically unlock the volume exists and has been stored in the currently
+        /// running operating system volume, otherwise it is false.
+        /// </param>
+        /// <param name="volumeKeyProtectorID">
+        /// A unique string identifier that contains the associated encrypted volume key protector ID if IsAutoUnlockEnabled is true.
+        /// If IsAutoUnlockEnabled is false, VolumeKeyProtectorID is an empty string.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/isautounlockenabled-win32-encryptablevolume
+        /// </remarks>
+        public void IsAutoUnlockEnabled(out bool isAutoUnlockEnabled, out string volumeKeyProtectorID)
+        {
+            using (var inParams = _vol.GetMethodParameters("IsAutoUnlockEnabled"))
+            {
+                using (var outParams = _vol.InvokeMethod("IsAutoUnlockEnabled", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    isAutoUnlockEnabled = (bool)outParams["IsAutoUnlockEnabled"];
+                    volumeKeyProtectorID = (string)outParams["VolumeKeyProtectorID"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        case 0x80310019: // FVE_E_NOT_DATA_VOLUME
+                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        //public void IsAutoUnlockKeyStored(out bool IsAutoUnlockKeyStored)
+        //{
+        //    using (var inParams = _vol.GetMethodParameters("IsAutoUnlockKeyStored"))
+        //    {
+        //        using (var outParams = _vol.InvokeMethod("IsAutoUnlockKeyStored", inParams, null))
+        //        {
+        //            if (outParams == null)
+        //            {
+        //                throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+        //            }
+
+        //            var result = (uint)outParams["returnValue"];
+        //            IsAutoUnlockKeyStored = (bool)outParams["IsAutoUnlockKeyStored"];
 
 
+        //            switch (result)
+        //            {
+        //                case 0: // S_OK
+        //                    return;
+
+
+
+
+
+        //                default:
+        //                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+        //            }
+        //        }
+        //    }
+        //}
     }
 }
 
