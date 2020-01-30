@@ -57,9 +57,11 @@
   <ItemGroup>
     <Compile Include="API.cs" />
     <Compile Include="BitLockerManager.cs" />
+    <Compile Include="Enums\ActiveDirectoryFlag.cs" />
     <Compile Include="Enums\CertificateType.cs" />
     <Compile Include="Enums\ConversionStatus.cs" />
     <Compile Include="Enums\EncryptionMethod.cs" />
+    <Compile Include="Enums\ForceEncryptionType.cs" />
     <Compile Include="Enums\FVEMetadataVersion.cs" />
     <Compile Include="Enums\HardwareEncryptionStatus.cs" />
     <Compile Include="Enums\KeyProtectorFlag.cs" />
