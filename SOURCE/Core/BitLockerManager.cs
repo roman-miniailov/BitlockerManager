@@ -11,6 +11,8 @@
 // LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 // --------------------------------------------------------------------------------------------------------------------
 
+#pragma warning disable CA1303 // Do not pass literals as localized parameters
+
 namespace BitLockerManager
 {
     using System;
@@ -48,27 +50,27 @@ namespace BitLockerManager
             };
 
             _wmiClass = new ManagementClass(path);
-            
-                foreach (ManagementObject vol in _wmiClass.GetInstances())
+
+            foreach (ManagementObject vol in _wmiClass.GetInstances())
+            {
+                var letterObj = vol["DriveLetter"];
+                if (letterObj == null)
                 {
-                    var letterObj = vol["DriveLetter"];
-                    if (letterObj == null)
-                    {
-                        continue;
-                    }
+                    continue;
+                }
 
-                    var letter = letterObj.ToString();
+                var letter = letterObj.ToString();
 
-                    if (drive.Name.StartsWith(letter, StringComparison.OrdinalIgnoreCase))
-                    {
-                        _vol = vol;
+                if (drive.Name.StartsWith(letter, StringComparison.OrdinalIgnoreCase))
+                {
+                    _vol = vol;
 
-                        PersistentVolumeID = (string)_vol["PersistentVolumeID"];
-                        DeviceID = (string)_vol["DeviceID"];
+                    PersistentVolumeID = (string)_vol["PersistentVolumeID"];
+                    DeviceID = (string)_vol["DeviceID"];
 
                     return;
-                    }
                 }
+            }
 
 
             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "No drive found for {0}.", drive));
@@ -80,10 +82,15 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("GetLockStatus", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             var lockStatus = (uint)outParams["LockStatus"];
                             return lockStatus == 1;
                         default:
@@ -106,12 +113,18 @@ namespace BitLockerManager
                     inParams["ForceDismount"] = false;
                     using (var outParams = _vol.InvokeMethod("Lock", inParams, null))
                     {
+                        if (outParams == null)
+                        {
+                            throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                        }
+
                         var result = (uint)outParams["returnValue"];
                         switch (result)
                         {
-                            case 0://S_OK
+                            case 0: // S_OK
                                 return;
                             case 0x80070005: // E_ACCESS_DENIED
+
                                 throw new InvalidOperationException("Applications are accessing this volume.");
                             case 0x80310001: // FVE_E_NOT_ENCRYPTED
                                 throw new InvalidOperationException("The volume is fully decrypted and cannot be locked.");
@@ -139,41 +152,46 @@ namespace BitLockerManager
         /// </param>
         public void UnlockDriveWithPassphrase(string password)
         {
-                var status = (uint)_vol["ProtectionStatus"];
-                if (status == 1 || status == 2)
+            var status = (uint)_vol["ProtectionStatus"];
+            if (status == 1 || status == 2)
+            {
+                using (var inParams = _vol.GetMethodParameters("UnlockWithPassphrase"))
                 {
-                    using (var inParams = _vol.GetMethodParameters("UnlockWithPassphrase"))
+                    inParams["Passphrase"] = password;
+                    using (var outParams = _vol.InvokeMethod("UnlockWithPassphrase", inParams, null))
                     {
-                        inParams["Passphrase"] = password;
-                        using (var outParams = _vol.InvokeMethod("UnlockWithPassphrase", inParams, null))
+                        if (outParams == null)
                         {
-                            var result = (uint)outParams["returnValue"];
-                            switch (result)
-                            {
-                                case 0://S_OK
-                                    return;
-                                case 0x80310008: // FVE_E_NOT_ACTIVATED
-                                    throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
-                                case 0x8031006C: // FVE_E_FIPS_PREVENTS_PASSPHRASE
-                                    throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.");
-                                case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
-                                    throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.");
-                                case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
-                                    throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.");
-                                case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                                    throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
-                                case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                                    throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
-                                default:
-                                    throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
-                            }
+                            throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                        }
+
+                        var result = (uint)outParams["returnValue"];
+                        switch (result)
+                        {
+                            case 0: // S_OK
+                                return;
+                            case 0x80310008: // FVE_E_NOT_ACTIVATED
+                                throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
+                            case 0x8031006C: // FVE_E_FIPS_PREVENTS_PASSPHRASE
+                                throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.");
+                            case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
+                                throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.");
+                            case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
+                                throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.");
+                            case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
+                                throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
+                            case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
+                                throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                            default:
+                                throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                         }
                     }
                 }
-                else
-                {
-                    throw new InvalidOperationException("Not an unlocked BitLocker drive.");
-                }
+            }
+            else
+            {
+                throw new InvalidOperationException("Not an unlocked BitLocker drive.");
+            }
         }
 
         /// <summary>
@@ -192,10 +210,15 @@ namespace BitLockerManager
                     inParams["NumericalPassword"] = password;
                     using (var outParams = _vol.InvokeMethod("UnlockWithNumericalPassword", inParams, null))
                     {
+                        if (outParams == null)
+                        {
+                            throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                        }
+
                         var result = (uint)outParams["returnValue"];
                         switch (result)
                         {
-                            case 0://S_OK
+                            case 0: // S_OK
                                 return;
                             case 0x80310008: // FVE_E_NOT_ACTIVATED
                                 throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
@@ -222,24 +245,29 @@ namespace BitLockerManager
         /// This method requires a numerical password protector to be present on the volume.
         /// Group Policy must also be configured to enable backup of recovery information to Active Directory.
         /// </summary>
-        /// <param name="volumeKeyProtectorID">
+        /// <param name="volumeKeyProtectorId">
         /// Volume Key Protector ID. A unique string identifier used to manage an encrypted volume key protector.
         /// This key protector must be a numerical password protector.
         /// </param>
         /// <remarks>
         /// https://docs.microsoft.com/en-us/windows/win32/secprov/backuprecoveryinformationtoactivedirectory-win32-encryptablevolume
         /// </remarks>
-        public void BackupRecoveryInformationToActiveDirectory(string volumeKeyProtectorID)
+        public void BackupRecoveryInformationToActiveDirectory(string volumeKeyProtectorId)
         {
             using (var inParams = _vol.GetMethodParameters("BackupRecoveryInformationToActiveDirectory"))
             {
-                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorID;
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
                 using (var outParams = _vol.InvokeMethod("BackupRecoveryInformationToActiveDirectory", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
                             throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
@@ -278,10 +306,15 @@ namespace BitLockerManager
                 inParams["NewVolumeKeyProtectorID"] = newVolumeKeyProtectorId;
                 using (var outParams = _vol.InvokeMethod("ChangeExternalKey", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The NewExternalKey parameter is not an array of size 32.");
@@ -328,11 +361,16 @@ namespace BitLockerManager
                 inParams["NewPassphrase"] = newPassphrase;
                 using (var outParams = _vol.InvokeMethod("ChangePassphrase", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     newProtectorId = (string)outParams["NewProtectorID"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is already locked by BitLocker Drive Encryption. You must unlock the drive from Control Panel.");
@@ -375,16 +413,21 @@ namespace BitLockerManager
                 inParams["NewPIN"] = newPIN;
                 using (var outParams = _vol.InvokeMethod("ChangePIN", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
                             throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
                         case 0x8031009A: // FVE_E_INVALID_PIN_CHARS
                             throw new InvalidOperationException("The NewPIN parameter contains characters that are not valid.When the \"Allow enhanced PINs for startup\""
-                                                                + " Group Policy is disabled, only numbers are supported.") ;
+                                                                + " Group Policy is disabled, only numbers are supported.");
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
                             throw new InvalidOperationException(" The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\" "
                                                                 + "or \"External Key\".Use either the ProtectKeyWithNumericalPassword or ProtectKeyWithExternalKey method to create a key protector of the appropriate type.");
@@ -419,10 +462,15 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("ClearAllAutoUnlockKeys", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
                             throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
@@ -450,10 +498,15 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("Decrypt", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -486,10 +539,15 @@ namespace BitLockerManager
                 inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
                 using (var outParams = _vol.InvokeMethod("DeleteKeyProtector", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -524,10 +582,15 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("DeleteKeyProtectors", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -559,10 +622,15 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("DisableAutoUnlock", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
 
                         case 0x80310017: // FVE_E_VOLUME_NOT_BOUND
@@ -594,10 +662,15 @@ namespace BitLockerManager
                 inParams["DisableCount"] = disableCount;
                 using (var outParams = _vol.InvokeMethod("DisableKeyProtectors", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0: //S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -627,10 +700,15 @@ namespace BitLockerManager
                 inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
                 using (var outParams = _vol.InvokeMethod("EnableAutoUnlock", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -665,20 +743,25 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("EnableKeyProtectors", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310007: // FVE_E_SECURE_KEY_REQUIRED
                             throw new InvalidOperationException("No key protectors exist on the volume. Use one of the following methods to specify key protectors for the volume: "
-                                                                + "ProtectKeyWithCertificateFile, ProtectKeyWithCertificateThumbprint, ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword" 
+                                                                + "ProtectKeyWithCertificateFile, ProtectKeyWithCertificateThumbprint, ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword"
                                                                 + "ProtectKeyWithPassphrase, ProtectKeyWithTPM, ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey");
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
                             throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker. ");
-                       default:
+                        default:
 
-                           throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
                 }
             }
@@ -720,17 +803,22 @@ namespace BitLockerManager
                 inParams["EncryptionFlags"] = encryptionFlags;
                 using (var outParams = _vol.InvokeMethod("Encrypt", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0: //S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.");
                         case 0x8031002E: // FVE_E_CANNOT_ENCRYPT_NO_KEY
                             throw new InvalidOperationException("No encryption key exists for the volume. Either disable key protectors by using the DisableKeyProtectors method or use one of the"
                                                                 + " following methods to specify key protectors for the volume: ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, "
-                                                                + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey" 
+                                                                + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey"
                                                                 + "Windows Vista: When no encryption key exists for the volume, ERROR_INVALID_OPERATION is returned instead. The decimal value is 4317 and the hexadecimal value is 0x10DD.");
                         case 0x8031002D: // FVE_E_CANNOT_SET_FVEK_ENCRYPTED
                             throw new InvalidOperationException("The provided encryption method does not match that of the partially or fully encrypted volume.To continue encryption, leave the EncryptionMethod parameter blank"
@@ -787,10 +875,15 @@ namespace BitLockerManager
                 inParams["EncryptionFlags"] = encryptionFlags;
                 using (var outParams = _vol.InvokeMethod("EncryptAfterHardwareTest", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     switch (result)
                     {
-                        case 0: //S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.");
@@ -840,11 +933,16 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("FindValidCertificates", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     certificateThumbprint = (string[])outParams["CertificateThumbprint"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x8031006E: // FVE_E_INVALID_BITLOCKER_OID
                             throw new InvalidOperationException("The available BitLocker OID is not valid.");
@@ -909,6 +1007,11 @@ namespace BitLockerManager
                 inParams["PrecisionFactor"] = precisionFactor;
                 using (var outParams = _vol.InvokeMethod("GetConversionStatus", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     conversionStatus = (ConversionStatus)outParams["ConversionStatus"];
                     encryptionPercentage = (uint)outParams["EncryptionPercentage"];
@@ -918,7 +1021,7 @@ namespace BitLockerManager
 
                     switch (result)
                     {
-                        case 0: //S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
                             throw new InvalidOperationException("The volume is locked.");
@@ -947,6 +1050,11 @@ namespace BitLockerManager
             {
                 using (var outParams = _vol.InvokeMethod("GetEncryptionMethod", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
 
                     encryptionMethod = (EncryptionMethod)outParams["EncryptionMethod"];
@@ -954,7 +1062,7 @@ namespace BitLockerManager
 
                     switch (result)
                     {
-                        case 0: //S_OK
+                        case 0: // S_OK
                             return;
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
@@ -983,11 +1091,16 @@ namespace BitLockerManager
                 inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
                 using (var outParams = _vol.InvokeMethod("GetExternalKeyFileName", inParams, null))
                 {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
                     var result = (uint)outParams["returnValue"];
                     filename = (string)outParams["FileName"];
                     switch (result)
                     {
-                        case 0://S_OK
+                        case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\", "
@@ -1003,9 +1116,600 @@ namespace BitLockerManager
             }
         }
 
+        /// <summary>
+        /// Returns the external key from a file created by SaveExternalKeyToFile, given the location of that file.
+        /// </summary>
+        /// <param name="pathWithFileName">
+        /// A string that specifies the location of the file containing an external key.
+        /// </param>
+        /// <param name="externalKey">
+        /// An array of bytes that is the 256-bit external key contained within the file that can be used to unlock a volume.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getexternalkeyfromfile-win32-encryptablevolume
+        /// </remarks>
+        public void GetExternalKeyFromFile(string pathWithFileName, out byte[] externalKey)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetExternalKeyFromFile"))
+            {
+                inParams["PathWithFileName"] = pathWithFileName;
+                using (var outParams = _vol.InvokeMethod("GetExternalKeyFromFile", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    externalKey = (byte[])outParams["ExternalKey"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException(
+                                "The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\", "
+                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                        case 0x80070002: // ERROR_FILE_NOT_FOUND
+                            throw new InvalidOperationException("Cannot find file at the location specified.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Determines whether the volume is located on a drive that supports or can support hardware encryption.
+        /// </summary>
+        /// <param name="hardwareEncryptionStatus">
+        /// Specifies whether the drive can support hardware encryption. This can be one of the following values.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/gethardwareencryptionstatus-win32-encryptablevolume
+        /// </remarks>
+        public void GetHardwareEncryptionStatus(out HardwareEncryptionStatus hardwareEncryptionStatus)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetHardwareEncryptionStatus"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetHardwareEncryptionStatus", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    hardwareEncryptionStatus = (HardwareEncryptionStatus)outParams["HardwareEncryptionStatus"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Provides status information about a hardware test of a fully decrypted operating system volume.
+        /// Use this method to show whether a hardware test is pending, as well as the success or failure of a hardware test that completed
+        /// on the last computer restart. To request a hardware test, use the EncryptAfterHardwareTest method.
+        /// </summary>
+        /// <param name="testStatus">
+        /// Specifies whether a hardware test is pending, as well as the success of failure of a hardware test that completed on the last computer restart.
+        /// </param>
+        /// <param name="testError">
+        /// Specifies the error from the last completed hardware test.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/gethardwareteststatus-win32-encryptablevolume
+        /// </remarks>
+        public void GetHardwareTestStatus(out TestStatus testStatus, out TestError testError)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetHardwareTestStatus"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetHardwareTestStatus", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    testStatus = (TestStatus)outParams["TestStatus"];
+                    testError = (TestError)outParams["TestError"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Returns the identifier string available in the volume's metadata.
+        /// </summary>
+        /// <param name="identificationField">
+        /// A string that specifies the identification field that is assigned to the volume.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getidentificationfield-win32-encryptablevolume
+        /// </remarks>
+        public void GetIdentificationField(out string identificationField)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetIdentificationField"))
+            {
+                using (var outParams = _vol.InvokeMethod("GetIdentificationField", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    identificationField = (string)outParams["IdentificationField"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Exports information that may help salvage encrypted data when the drive is severely damaged and no data backup files exist.
+        /// The exported information consists of the volume's encryption key secured by a key protector of the type "Numerical Password" or "External Key".
+        /// To make use of this package, you must also save the corresponding numerical password or external key.
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector. To export a key package, you must use a key protector
+        /// of type "Numerical Password" or "External Key".
+        /// </param>
+        /// <param name="keyPackage">
+        /// A byte stream that contains the encryption key for a volume, secured by the specified key protector.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeypackage-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyPackage(string volumeKeyProtectorId, out byte[] keyPackage)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyPackage"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyPackage", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    keyPackage = (byte[])outParams["KeyPackage"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume.");
+                        case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
+                            throw new InvalidOperationException("  The VolumeKeyProtectorID parameter does not refer to a key protector of the type "
+                                                                + "\"Numerical Password\" or \"External Key\".Use either the ProtectKeyWithNumericalPassword or "
+                                                                + "ProtectKeyWithExternalKey method to create a key protector of the appropriate type.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Retrieves the security identifier and flags used to protect a key.
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A string identifier that can be used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="sidString">
+        /// A string that contains the security identifier (SID).
+        /// </param>
+        /// <param name="flags">
+        /// Flags that change the function behavior. 
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectoradsidinformation-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorAdSidInformation(string volumeKeyProtectorId, out string sidString, out KeyProtectorFlag flags)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorAdSidInformation"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorAdSidInformation", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    sidString = (string)outParams["SidString"];
+                    flags = (KeyProtectorFlag)outParams["Flags"];
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the public key and certificate thumbprint for a public key protector.
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="publicKey">
+        /// An array of bytes that specifies the public key.
+        /// </param>
+        /// <param name="certThumbprint">
+        /// A string that specifies the certificate thumbprint.
+        /// </param>
+        /// <param name="certType">
+        /// An unsigned integer that specifies the type of the key protector. This integer is used to differentiate between data recovery agent (DRA) and user certificates.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectorcertificate-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorCertificate(string volumeKeyProtectorId, out byte[] publicKey, out string certThumbprint, out CertificateType certType)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorCertificate"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorCertificate", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    publicKey = (byte[])outParams["PublicKey"];
+                    certThumbprint = (string)outParams["CertThumbprint"];
+                    certType = (CertificateType)outParams["CertType"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The specified key protector is not a key protector. You must enter another key protector.");
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException(" BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        case 0x80310073: // FVE_E_POLICY_USER_CERTIFICATE_REQUIRED
+                            throw new InvalidOperationException("Group Policy requires the use of a user certificate, such as a smart card.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the external key for a given key protector of the appropriate type.
+        /// The key protector identifier must refer to a key protector of type "External Key", "TPM And PIN And Startup Key", or "TPM And Startup Key".
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="externalKey">
+        /// An array of bytes that specifies the 256-bit external key that can be used to unlock the corresponding volume.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectorexternalkey-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorExternalKey(string volumeKeyProtectorId, out byte[] externalKey)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorExternalKey"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorExternalKey", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    externalKey = (byte[])outParams["ExternalKey"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\","
+                                                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker. ");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the display name used to identify a given key protector.
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="friendlyName">
+        /// A string that contains the user-specified name used to identify the given key protector.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectorfriendlyname-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorFriendlyName(string volumeKeyProtectorId, out string friendlyName)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorFriendlyName"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorFriendlyName", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    friendlyName = (string)outParams["FriendlyName"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the numerical password for a given key protector of the appropriate type.
+        /// The key protector identifier must refer to a key protector of type "Numerical Password".
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="numericalPassword">
+        /// A string that represents the password that can be used to unlock the corresponding volume.
+        /// The numerical password is 48 digits. These digits are divided into 8 groups of 6 digits, with the last digit in each group indicating a
+        /// checksum value for the group. Assuming that a group of six digits is labeled as x1, x2, x3, x4, x5, and x6, the checksum x6 digit is calculated as –x1+x2–x3+x4–x5 mod 11.
+        /// The groups of digits are separated by a hyphen. Therefore, "xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx-xxxxxx" is the format of the returned password.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectornumericalpassword-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorNumericalPassword(string volumeKeyProtectorId, out string numericalPassword)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorNumericalPassword"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorNumericalPassword", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    numericalPassword = (string)outParams["NumericalPassword"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80310000: // FVE_E_LOCKED_VOLUME
+                            throw new InvalidOperationException("The volume is locked.");
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\".");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Retrieves the platform validation profile for a given key protector of the appropriate type.
+        /// The key protector identifier must refer to a key protector of type "TPM", "TPM And PIN", "TPM And PIN And Startup Key", or "TPM And Startup Key".
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="platformValidationProfile">
+        /// An array of integers that specifies how the Trusted Platform Module (TPM) Security Hardware of the computer secures the encryption key of the disk volume.
+        /// Value - Meaning:
+        /// 0 - Core Root of Trust of Measurement(CRTM), BIOS, and Platform Extensions.
+        /// 1 - Platform and Motherboard Configuration and Data.
+        /// 2 - Option ROM Code.
+        /// 3 - Option ROM Configuration and Data.
+        /// 4 - Master Boot Record(MBR) Code.
+        /// 5 - Master Boot Record(MBR) Partition Table.
+        /// 6 - State Transition and Wake Events.
+        /// 7 - Computer Manufacturer-Specific.
+        /// 8 - NTFS Boot Sector.
+        /// 9 - NTFS Boot Block.
+        /// 10 - Boot Manager.
+        /// 11 - BitLocker Access Control.
+        /// 12 - Defined for use by the static operating system.
+        /// 13 - Defined for use by the static operating system.
+        /// 14 - Defined for use by the static operating system.
+        /// 15 - Defined for use by the static operating system.
+        /// 16 - Used for debugging.
+        /// 17 - Dynamic CRTM.
+        /// 18 - Platform defined.
+        /// 19 - Used by a trusted operating system.
+        /// 20 - Used by a trusted operating system.
+        /// 21 - Used by a trusted operating system.
+        /// 22 - Used by a trusted operating system.
+        /// 23 - Application support.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectorplatformvalidationprofile-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectorPlatformValidationProfile(string volumeKeyProtectorId, out byte[] platformValidationProfile)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorPlatformValidationProfile"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorPlatformValidationProfile", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    platformValidationProfile = (byte[])outParams["PlatformValidationProfile"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException(
+                                "The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"TPM\", \"TPM And PIN\","
+                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".\r\n");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException(
+                                "BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Lists the protectors used to secure the volume's encryption key. If a protector type is provided,
+        /// then only volume key protectors of the specified type are returned.
+        /// </summary>
+        /// <param name="keyProtectorType">
+        /// An unsigned integer that specifies the type of key protector to return.
+        /// </param>
+        /// <param name="volumeKeyProtectorId">
+        /// An array of strings that identify the key protectors used to secure the volume's encryption key.
+        /// </param>
+        /// <remarks>
+        /// https://docs.microsoft.com/en-us/windows/win32/secprov/getkeyprotectors-win32-encryptablevolume
+        /// </remarks>
+        public void GetKeyProtectors(KeyProtectorType keyProtectorType, out string[] volumeKeyProtectorId)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectors"))
+            {
+                inParams["KeyProtectorType"] = (uint)keyProtectorType;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectors", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    volumeKeyProtectorId = (string[])outParams["VolumeKeyProtectorID"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter is specified but does not refer to a valid KeyProtectorType.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED 
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Indicates the type of a given key protector.
+        /// </summary>
+        /// <param name="volumeKeyProtectorId">
+        /// A unique string identifier used to manage an encrypted volume key protector.
+        /// </param>
+        /// <param name="keyProtectorType">
+        /// Type of the key protector.
+        /// </param>
+        public void GetKeyProtectorType(string volumeKeyProtectorId, out KeyProtectorType keyProtectorType)
+        {
+            using (var inParams = _vol.GetMethodParameters("GetKeyProtectorType"))
+            {
+                inParams["VolumeKeyProtectorID"] = volumeKeyProtectorId;
+                using (var outParams = _vol.InvokeMethod("GetKeyProtectorType", inParams, null))
+                {
+                    if (outParams == null)
+                    {
+                        throw new InvalidOperationException("Unable to call method. Output parameters are null.");
+                    }
+
+                    var result = (uint)outParams["returnValue"];
+                    keyProtectorType = (KeyProtectorType)outParams["KeyProtectorType"];
+
+                    switch (result)
+                    {
+                        case 0: // S_OK
+                            return;
+                        case 0x80070057: // E_INVALIDARG
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid KeyProtectorType.");
+                        case 0x80310008: // FVE_E_NOT_ACTIVATED
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                        default:
+                            throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
+                    }
+                }
+            }
+        }
+
+
+
     }
 }
 
 //case : // 
 //throw new InvalidOperationException("");
 
+#pragma warning restore CA1303 // Do not pass literals as localized parameters

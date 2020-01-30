@@ -57,9 +57,15 @@
   <ItemGroup>
     <Compile Include="API.cs" />
     <Compile Include="BitLockerManager.cs" />
+    <Compile Include="Enums\CertificateType.cs" />
     <Compile Include="Enums\ConversionStatus.cs" />
     <Compile Include="Enums\EncryptionMethod.cs" />
+    <Compile Include="Enums\HardwareEncryptionStatus.cs" />
+    <Compile Include="Enums\KeyProtectorFlag.cs" />
+    <Compile Include="Enums\KeyProtectorType.cs" />
     <Compile Include="Enums\ProtectionStatus.cs" />
+    <Compile Include="Enums\TestError.cs" />
+    <Compile Include="Enums\TestStatus.cs" />
     <Compile Include="Enums\WipingStatus.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
