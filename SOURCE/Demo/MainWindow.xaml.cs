@@ -161,7 +161,7 @@ namespace Demo
 
             try
             {
-                drive.LockDrive();
+                drive.Lock();
                 UpdateSelected();
             }
             catch (Exception ex)

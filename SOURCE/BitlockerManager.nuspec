@@ -1,0 +1,54 @@
+<?xml version="1.0"?>
+<package>
+	<metadata>
+		<id>
+			BitLockerManager
+		</id>
+		<version>
+			1.0.0.0
+		</version>
+		<title>
+			BitLocker manager.
+		</title>
+		<authors>
+			Roman Minyaylov
+		</authors>
+		<owners>
+			Roman Minyaylov
+		</owners>
+		<licenseUrl>
+			https://github.com/roman-minyaylov/BitlockerManager
+		</licenseUrl>
+		<projectUrl>
+			https://github.com/roman-minyaylov/BitlockerManager
+		</projectUrl>
+		<iconUrl>
+			https://github.githubassets.com/favicon.ico
+		</iconUrl>
+		<requireLicenseAcceptance>
+			false
+		</requireLicenseAcceptance>
+		<description>
+			BitLocker manager. Lock/unlock, create, remove, encrypt and so on using C# or VB.Net.
+		</description>
+		<summary>
+			BitLocker manager. Lock/unlock, create, remove, encrypt and so on using C# or VB.Net. Source code - https://github.com/roman-minyaylov/BitlockerManager .
+		</summary>
+		<releaseNotes>
+			Bug fixes and performance improvements. Please check changelog.
+		</releaseNotes>
+		<copyright>
+			Roman Minyaylov (c) 2019 - 2020
+		</copyright>
+		<tags>
+			bitlocker encryption encrypt
+		</tags>
+		<dependencies>
+			<group targetFramework="net45" />
+		</dependencies>
+	</metadata>
+	<files>
+		<!-- Assemblies -->
+		<file src="Core\bin\Release\BitlockerManager.dll" target="lib\net45" />	
+	</files>
+</package>
