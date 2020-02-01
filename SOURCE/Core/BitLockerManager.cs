@@ -21,6 +21,7 @@ namespace BitLockerManager
     using System.Management;
     using System.Security.Principal;
 
+    using BitlockerManager;
     using BitlockerManager.Enums;
 
     /// <summary>
@@ -127,17 +128,17 @@ namespace BitLockerManager
                             case 0: // S_OK
                                 return;
                             case 0x80310008: // FVE_E_NOT_ACTIVATED
-                                throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
+                                throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.").SetCode(0x80310008);
                             case 0x8031006C: // FVE_E_FIPS_PREVENTS_PASSPHRASE
-                                throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.");
+                                throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.").SetCode(0x8031006C);
                             case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
-                                throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.");
+                                throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.").SetCode(0x80310080);
                             case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
-                                throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.");
+                                throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.").SetCode(0x80310081);
                             case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                                throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
+                                throw new InvalidOperationException("The volume cannot be unlocked with the provided information.").SetCode(0x80310027);
                             case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                                throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                                throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.").SetCode(0x80310033);
                             default:
                                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                         }
@@ -177,13 +178,13 @@ namespace BitLockerManager
                             case 0: // S_OK
                                 return;
                             case 0x80310008: // FVE_E_NOT_ACTIVATED
-                                throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
+                                throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.").SetCode(0x80310008);
                             case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                                throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                                throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.").SetCode(0x80310033);
                             case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                                throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
+                                throw new InvalidOperationException("The volume cannot be unlocked with the provided information.").SetCode(0x80310027);
                             case 0x80310035: // FVE_E_INVALID_PASSWORD_FORMAT
-                                throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.");
+                                throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.").SetCode(0x80310035);
                             default:
                                 throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                         }
@@ -226,11 +227,11 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x1: // S_FALSE
-                            throw new InvalidOperationException("Group Policy does not permit the storage of recovery information to Active Directory.");
+                            throw new InvalidOperationException("Group Policy does not permit the storage of recovery information to Active Directory.").SetCode(0x1);
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
-                            throw new InvalidOperationException("The specified key protector is not a numerical key protector. You must enter a numerical password protector. ");
+                            throw new InvalidOperationException("The specified key protector is not a numerical key protector. You must enter a numerical password protector.").SetCode(0x8031003A);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -273,19 +274,19 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The NewExternalKey parameter is not an array of size 32.");
+                            throw new InvalidOperationException("The NewExternalKey parameter is not an array of size 32.").SetCode(0x80070057);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
-                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
+                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.").SetCode(0x80310030);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume.").SetCode(0x80310033);
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
                             throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\" or "
                                                                 + "\"External Key\".Use either the ProtectKeyWithNumericalPassword or ProtectKeyWithExternalKey "
-                                                                + "method to create a key protector of the appropriate type.");
+                                                                + "method to create a key protector of the appropriate type.").SetCode(0x8031003A);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -329,17 +330,17 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is already locked by BitLocker Drive Encryption. You must unlock the drive from Control Panel.");
+                            throw new InvalidOperationException("The volume is already locked by BitLocker Drive Encryption. You must unlock the drive from Control Panel.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310024: // FVE_E_OVERLAPPED_UPDATE
-                            throw new InvalidOperationException("The control block for the encrypted volume was updated by another thread.");
+                            throw new InvalidOperationException("The control block for the encrypted volume was updated by another thread.").SetCode(0x80310024);
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
-                            throw new InvalidOperationException("The specified key protector is not of the correct type.");
+                            throw new InvalidOperationException("The specified key protector is not of the correct type.").SetCode(0x8031003A);
                         case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
-                            throw new InvalidOperationException("The updated passphrase provided does not meet the minimum or maximum length requirements.");
+                            throw new InvalidOperationException("The updated passphrase provided does not meet the minimum or maximum length requirements.").SetCode(0x80310080);
                         case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
-                            throw new InvalidOperationException("The updated passphrase does not meet the complexity requirements set by the administrator in group policy.");
+                            throw new InvalidOperationException("The updated passphrase does not meet the complexity requirements set by the administrator in group policy.").SetCode(0x80310081);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -380,24 +381,25 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
-                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
+                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.").SetCode(0x80310030);
                         case 0x8031009A: // FVE_E_INVALID_PIN_CHARS
                             throw new InvalidOperationException("The NewPIN parameter contains characters that are not valid.When the \"Allow enhanced PINs for startup\""
-                                                                + " Group Policy is disabled, only numbers are supported.");
+                                                                + " Group Policy is disabled, only numbers are supported.").SetCode(0x8031009A);
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
                             throw new InvalidOperationException(" The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\" "
-                                                                + "or \"External Key\".Use either the ProtectKeyWithNumericalPassword or ProtectKeyWithExternalKey method to create a key protector of the appropriate type.");
+                                                                + "or \"External Key\".Use either the ProtectKeyWithNumericalPassword or ProtectKeyWithExternalKey method "
+                                                                + "to create a key protector of the appropriate type.").SetCode(0x8031003A);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310068: // FVE_E_POLICY_INVALID_PIN_LENGTH
                             throw new InvalidOperationException(" The NewPIN parameter supplied is either longer than 20 characters, shorter than 4 characters, "
-                                                                + "or shorter than the minimum length specified by Group Policy.");
+                                                                + "or shorter than the minimum length specified by Group Policy.").SetCode(0x80310068);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume.").SetCode(0x80310033);
                         case 0x80284008: // TBS_E_SERVICE_NOT_RUNNING
-                            throw new InvalidOperationException("No compatible Trusted Platform Module(TPM) is found on this computer.");
+                            throw new InvalidOperationException("No compatible Trusted Platform Module(TPM) is found on this computer.").SetCode(0x80284008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -429,9 +431,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310028: // FVE_E_NOT_OS_VOLUME
-                            throw new InvalidOperationException("The method can only be run for the currently running operating system volume.");
+                            throw new InvalidOperationException("The method can only be run for the currently running operating system volume.").SetCode(0x80310028);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -465,10 +467,10 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310029: // FVE_E_AUTOUNLOCK_ENABLED
                             throw new InvalidOperationException("This volume cannot be decrypted because keys used to automatically unlock data"
-                                                                + " volumes are available. Use ClearAllAutoUnlockKeys to remove these keys.");
+                                                                + " volumes are available. Use ClearAllAutoUnlockKeys to remove these keys.").SetCode(0x80310029);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -506,17 +508,18 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector.");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector.").SetCode(0x80070057);
                         case 0x8031001D: // FVE_E_KEY_REQUIRED
                             throw new InvalidOperationException("The last key protector for a partially or fully encrypted volume cannot be removed if "
-                                                                + "key protectors are enabled.Use DisableKeyProtectors before removing this last key protector to ensure that encrypted portions of the volume remain accessible.");
+                                                                + "key protectors are enabled.Use DisableKeyProtectors before removing this last key protector"
+                                                                + " to ensure that encrypted portions of the volume remain accessible.").SetCode(0x8031001D);
                         case 0x8031001F: // FVE_E_VOLUME_BOUND_ALREADY
                             throw new InvalidOperationException("This key protector cannot be deleted because it is being used to automatically unlock the volume."
-                                                                + " Use DisableAutoUnlock to disable automatic unlocking before deleting this key protector.");
+                                                                + " Use DisableAutoUnlock to disable automatic unlocking before deleting this key protector.").SetCode(0x8031001F);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -549,14 +552,14 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x8031001D: // FVE_E_KEY_REQUIRED
                             throw new InvalidOperationException("The last key protector for a partially or fully encrypted volume cannot be removed"
                                                                 + " if key protectors are enabled.Use DisableKeyProtectors before removing this last key protector to ensure that encrypted portions"
-                                                                + " of the volume remain accessible.");
+                                                                + " of the volume remain accessible.").SetCode(0x8031001D);
                         case 0x8031001F: // FVE_E_VOLUME_BOUND_ALREADY
                             throw new InvalidOperationException("Key protectors cannot be deleted because one of them is being used to automatically unlock the volume."
-                                                                + " Use DisableAutoUnlock to disable automatic unlocking before running this method.");
+                                                                + " Use DisableAutoUnlock to disable automatic unlocking before running this method.").SetCode(0x8031001F);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -590,11 +593,11 @@ namespace BitLockerManager
                             return;
 
                         case 0x80310017: // FVE_E_VOLUME_NOT_BOUND
-                            throw new InvalidOperationException("Automatic unlocking on the volume is disabled.");
+                            throw new InvalidOperationException("Automatic unlocking on the volume is disabled.").SetCode(0x80310017);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310019: // FVE_E_NOT_DATA_VOLUME
-                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.");
+                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.").SetCode(0x80310019);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -629,7 +632,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -667,18 +670,18 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector of the type \"External Key\".");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector of the type \"External Key\".").SetCode(0x80070057);
                         case 0x80310019: // FVE_E_NOT_DATA_VOLUME
-                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.");
+                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.").SetCode(0x80310019);
                         case 0x80310020: // FVE_E_OS_NOT_PROTECTED
                             throw new InvalidOperationException("The method cannot be run if the currently running operating system volume is not protected by BitLocker Drive Encryption "
-                                                                + "or does not have encryption in progress.");
+                                                                + "or does not have encryption in progress.").SetCode(0x80310020);
                         case 0x8031001F: // FVE_E_VOLUME_BOUND_ALREADY
-                            throw new InvalidOperationException("Automatic unlocking on the volume has previously been enabled.");
+                            throw new InvalidOperationException("Automatic unlocking on the volume has previously been enabled.").SetCode(0x8031001F);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -712,9 +715,9 @@ namespace BitLockerManager
                         case 0x80310007: // FVE_E_SECURE_KEY_REQUIRED
                             throw new InvalidOperationException("No key protectors exist on the volume. Use one of the following methods to specify key protectors for the volume: "
                                                                 + "ProtectKeyWithCertificateFile, ProtectKeyWithCertificateThumbprint, ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword"
-                                                                + "ProtectKeyWithPassphrase, ProtectKeyWithTPM, ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey");
+                                                                + "ProtectKeyWithPassphrase, ProtectKeyWithTPM, ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey").SetCode(0x80310007);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker. ");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
 
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
@@ -770,22 +773,22 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.");
+                            throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.").SetCode(0x80070057);
                         case 0x8031002E: // FVE_E_CANNOT_ENCRYPT_NO_KEY
                             throw new InvalidOperationException("No encryption key exists for the volume. Either disable key protectors by using the DisableKeyProtectors method or use one of the"
                                                                 + " following methods to specify key protectors for the volume: ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, "
                                                                 + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey"
-                                                                + "Windows Vista: When no encryption key exists for the volume, ERROR_INVALID_OPERATION is returned instead. The decimal value is 4317 and the hexadecimal value is 0x10DD.");
+                                                                + "Windows Vista: When no encryption key exists for the volume, ERROR_INVALID_OPERATION is returned instead. The decimal value is 4317 and the hexadecimal value is 0x10DD.").SetCode(0x8031002E);
                         case 0x8031002D: // FVE_E_CANNOT_SET_FVEK_ENCRYPTED
                             throw new InvalidOperationException("The provided encryption method does not match that of the partially or fully encrypted volume.To continue encryption, leave the EncryptionMethod parameter blank"
-                                                                + " or use a value of zero.");
+                                                                + " or use a value of zero.").SetCode(0x8031002D);
                         case 0x8031001E: // FVE_E_CLUSTERING_NOT_SUPPORTED
-                            throw new InvalidOperationException("The volume cannot be encrypted because this computer is configured to be part of a server cluster.");
+                            throw new InvalidOperationException("The volume cannot be encrypted because this computer is configured to be part of a server cluster.").SetCode(0x8031001E);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x8031002C: // FVE_E_POLICY_PASSWORD_REQUIRED
                             throw new InvalidOperationException("No key protectors of the type \"Numerical Password\" are specified. The Group Policy requires a backup of recovery "
-                                                                + "information to Active Directory Domain Services. To add at least one key protector of that type, use the ProtectKeyWithNumericalPassword method.");
+                                                                + "information to Active Directory Domain Services. To add at least one key protector of that type, use the ProtectKeyWithNumericalPassword method.").SetCode(0x8031002C);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -842,30 +845,30 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.");
+                            throw new InvalidOperationException("The EncryptionMethod parameter is provided but is not within the known range or does not match the current Group Policy setting.").SetCode(0x80070057);
                         case 0x8031002E: // FVE_E_CANNOT_ENCRYPT_NO_KEY
                             throw new InvalidOperationException("No encryption key exists for the volume. Either disable key protectors by using the DisableKeyProtectors method or use one of the"
                                                                 + " following methods to specify key protectors for the volume: ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, "
                                                                 + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey"
-                                                                + "Windows Vista: When no encryption key exists for the volume, ERROR_INVALID_OPERATION is returned instead. The decimal value is 4317 and the hexadecimal value is 0x10DD.");
+                                                                + "Windows Vista: When no encryption key exists for the volume, ERROR_INVALID_OPERATION is returned instead. The decimal value is 4317 and the hexadecimal value is 0x10DD.").SetCode(0x8031002E);
                         case 0x8031001E: // FVE_E_CLUSTERING_NOT_SUPPORTED
-                            throw new InvalidOperationException("The volume cannot be encrypted because this computer is configured to be part of a server cluster.");
+                            throw new InvalidOperationException("The volume cannot be encrypted because this computer is configured to be part of a server cluster.").SetCode(0x8031001E);
 
                         case 0x8031003B: // FVE_E_NO_PROTECTORS_TO_TEST
                             throw new InvalidOperationException("No key protectors of the type \"TPM\", \"TPM And PIN\", \"TPM And PIN And Startup Key\", \"TPM And Startup Key\", or \"External Key\" "
                                                                 + "can be found.The hardware test only involves the previous key protectors. If you still want to run a hardware test, you must use one of "
                                                                 + "the following methods to specify key protectors for the volume: ProtectKeyWithExternalKey, ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, "
-                                                                + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey");
+                                                                + "ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndPINAndStartupKey, ProtectKeyWithTPMAndStartupKey").SetCode(0x8031003B);
                         case 0x80310039: // FVE_E_NOT_DECRYPTED
                             throw new InvalidOperationException("The volume is partially or fully encrypted. The hardware test applies before encryption occurs. If you still want to run the test,"
                                                                 + " first use the Decrypt method and then use one of the following methods to add key protectors: ProtectKeyWithExternalKey,"
-                                                                + " ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndStartupKey.");
+                                                                + " ProtectKeyWithNumericalPassword, ProtectKeyWithTPM, ProtectKeyWithTPMAndPIN, ProtectKeyWithTPMAndStartupKey.").SetCode(0x80310039);
                         case 0x80310028: // FVE_E_NOT_OS_VOLUME
                             throw new InvalidOperationException("The volume is a data volume. The hardware test applies only to volumes that can start the operating system. Run this method on the "
-                                                                + "currently started operating system volume.");
+                                                                + "currently started operating system volume.").SetCode(0x80310028);
                         case 0x8031002C: // FVE_E_POLICY_PASSWORD_REQUIRED
                             throw new InvalidOperationException("No key protectors of the type \"Numerical Password\" are specified. The Group Policy requires a backup of recovery "
-                                                                + "information to Active Directory Domain Services. To add at least one key protector of that type, use the ProtectKeyWithNumericalPassword method.");
+                                                                + "information to Active Directory Domain Services. To add at least one key protector of that type, use the ProtectKeyWithNumericalPassword method.").SetCode(0x8031002C);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -901,7 +904,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x8031006E: // FVE_E_INVALID_BITLOCKER_OID
-                            throw new InvalidOperationException("The available BitLocker OID is not valid.");
+                            throw new InvalidOperationException("The available BitLocker OID is not valid.").SetCode(0x8031006E);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -980,7 +983,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1060,11 +1063,11 @@ namespace BitLockerManager
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\", "
-                                                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                                                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".").SetCode(0x80070057);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1105,9 +1108,9 @@ namespace BitLockerManager
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException(
                                 "The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\", "
-                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                                + "\"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".").SetCode(0x80070057);
                         case 0x80070002: // ERROR_FILE_NOT_FOUND
-                            throw new InvalidOperationException("Cannot find file at the location specified.");
+                            throw new InvalidOperationException("Cannot find file at the location specified.").SetCode(0x80070002);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1181,7 +1184,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1216,9 +1219,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.");
+                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1260,15 +1263,15 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume.").SetCode(0x80310033);
                         case 0x8031003A: // FVE_E_INVALID_PROTECTOR_TYPE
                             throw new InvalidOperationException("  The VolumeKeyProtectorID parameter does not refer to a key protector of the type "
                                                                 + "\"Numerical Password\" or \"External Key\".Use either the ProtectKeyWithNumericalPassword or "
-                                                                + "ProtectKeyWithExternalKey method to create a key protector of the appropriate type.");
+                                                                + "ProtectKeyWithExternalKey method to create a key protector of the appropriate type.").SetCode(0x8031003A);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1357,13 +1360,13 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The specified key protector is not a key protector. You must enter another key protector.");
+                            throw new InvalidOperationException("The specified key protector is not a key protector. You must enter another key protector.").SetCode(0x80070057);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.");
+                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException(" BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException(" BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310073: // FVE_E_POLICY_USER_CERTIFICATE_REQUIRED
-                            throw new InvalidOperationException("Group Policy requires the use of a user certificate, such as a smart card.");
+                            throw new InvalidOperationException("Group Policy requires the use of a user certificate, such as a smart card.").SetCode(0x80310073);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1404,12 +1407,12 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\","
-                                                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".");
+                                                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker. ");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume. Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1449,9 +1452,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector.");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid key protector.").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1495,11 +1498,11 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\".");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"Numerical Password\".").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1567,10 +1570,10 @@ namespace BitLockerManager
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException(
                                 "The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"TPM\", \"TPM And PIN\","
-                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".\r\n");
+                                + " \"TPM And PIN And Startup Key\", or \"TPM And Startup Key\".").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
                             throw new InvalidOperationException(
-                                "BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                                "BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1611,9 +1614,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter is specified but does not refer to a valid KeyProtectorType.");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter is specified but does not refer to a valid KeyProtectorType.").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED 
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1653,9 +1656,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid KeyProtectorType.");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a valid KeyProtectorType.").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1760,7 +1763,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070032: // ERROR_NOT_SUPPORTED
-                            throw new InvalidOperationException("Returned if the volume is not suspended or is not an OS volume.");
+                            throw new InvalidOperationException("Returned if the volume is not suspended or is not an OS volume.").SetCode(0x80070032);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1796,9 +1799,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0xCCD802F: // E_INVALIDARG
-                            throw new InvalidOperationException("The value for the Version parameter is not valid.");
+                            throw new InvalidOperationException("The value for the Version parameter is not valid.").SetCode(0xCCD802F);
                         case 0xD: // ERROR_INVALID_DATA
-                            throw new InvalidOperationException("The driver returned an unsupported data format.");
+                            throw new InvalidOperationException("The driver returned an unsupported data format.").SetCode(0xD);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1840,9 +1843,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310019: // FVE_E_NOT_DATA_VOLUME
-                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.");
+                            throw new InvalidOperationException("The method cannot be run for the currently running operating system volume.").SetCode(0x80310019);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1878,9 +1881,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310028: // FVE_E_NOT_OS_VOLUME
-                            throw new InvalidOperationException("The method can only be run for the currently running operating system volume.");
+                            throw new InvalidOperationException("The method can only be run for the currently running operating system volume.").SetCode(0x80310028);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -1921,7 +1924,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The KeyProtectorType parameter is specified but does not refer to a valid key protector type.");
+                            throw new InvalidOperationException("The KeyProtectorType parameter is specified but does not refer to a valid key protector type.").SetCode(0x80070057);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2000,13 +2003,13 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070005: // E_ACCESS_DENIED
-                            throw new InvalidOperationException("Applications are accessing this volume.");
+                            throw new InvalidOperationException("Applications are accessing this volume.").SetCode(0x80070005);
                         case 0x80310001: // FVE_E_NOT_ENCRYPTED
-                            throw new InvalidOperationException("The volume is fully decrypted and cannot be locked.");
+                            throw new InvalidOperationException("The volume is fully decrypted and cannot be locked.").SetCode(0x80310001);
                         case 0x80310021: // FVE_E_PROTECTION_DISABLED
-                            throw new InvalidOperationException("The volume's encryption key is available in the clear on the disk, preventing the volume from being locked.");
+                            throw new InvalidOperationException("The volume's encryption key is available in the clear on the disk, preventing the volume from being locked.").SetCode(0x80310021);
                         case 0x80310022: // FVE_E_RECOVERY_KEY_REQUIRED
-                            throw new InvalidOperationException("The volume does not have key protectors of the type \"Numerical Password\" or \"External Key\" that are necessary to unlock the volume.");
+                            throw new InvalidOperationException("The volume does not have key protectors of the type \"Numerical Password\" or \"External Key\" that are necessary to unlock the volume.").SetCode(0x80310022);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2037,7 +2040,7 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2175,15 +2178,15 @@ namespace BitLockerManager
                         case 0x8031006E: // FVE_E_NON_BITLOCKER_OID
                             throw new InvalidOperationException("The EKU attribute of the specified certificate does not permit it to be used for BitLocker Drive Encryption.BitLocker does"
                                                                 + " not require that a certificate have an EKU attribute, but if one is configured, it must be set to an OID that matches the"
-                                                                + " OID configured for BitLocker.");
+                                                                + " OID configured for BitLocker.").SetCode(0x8031006E);
                         case 0x80310072: // FVE_E_POLICY_USER_CERTIFICATE_NOT_ALLOWED
-                            throw new InvalidOperationException("Group Policy does not permit user certificates, such as smart cards, to be used with BitLocker.");
+                            throw new InvalidOperationException("Group Policy does not permit user certificates, such as smart cards, to be used with BitLocker.").SetCode(0x80310072);
                         case 0x80310074: // FVE_E_POLICY_USER_CERT_MUST_BE_HW
-                            throw new InvalidOperationException("Group Policy requires that you supply a smart card to use BitLocker.");
+                            throw new InvalidOperationException("Group Policy requires that you supply a smart card to use BitLocker.").SetCode(0x80310074);
                         case 0x80310086: // FVE_E_POLICY_PROHIBITS_SELFSIGNED
-                            throw new InvalidOperationException("Group Policy does not permit the use of self - signed certificates.");
+                            throw new InvalidOperationException("Group Policy does not permit the use of self - signed certificates.").SetCode(0x80310086);
                         case 0x2: // ERROR_FILE_NOT_FOUND
-                            throw new InvalidOperationException("The system cannot find the specified file.");
+                            throw new InvalidOperationException("The system cannot find the specified file.").SetCode(0x2);
                        default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2228,17 +2231,17 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0xD: // ERROR_INVALID_DATA
-                            throw new InvalidOperationException("The data is not valid.");
+                            throw new InvalidOperationException("The data is not valid.").SetCode(0xD);
                         case 0x8031006E: // FVE_E_NON_BITLOCKER_OID
                             throw new InvalidOperationException("The EKU attribute of the specified certificate does not permit it to be used for BitLocker Drive Encryption. "
                                                                 + "BitLocker does not require that a certificate have an EKU attribute, but if one is configured, it must be set"
-                                                                + " to an OID that matches the OID configured for BitLocker.");
+                                                                + " to an OID that matches the OID configured for BitLocker.").SetCode(0x8031006E);
                         case 0x80310072: // FVE_E_POLICY_USER_CERTIFICATE_NOT_ALLOWED
-                            throw new InvalidOperationException("Group Policy does not permit user certificates, such as smart cards, to be used with BitLocker.");
+                            throw new InvalidOperationException("Group Policy does not permit user certificates, such as smart cards, to be used with BitLocker.").SetCode(0x80310072);
                         case 0x80310074: // FVE_E_POLICY_USER_CERT_MUST_BE_HW
-                            throw new InvalidOperationException("Group Policy requires that you supply a smart card to use BitLocker.");
+                            throw new InvalidOperationException("Group Policy requires that you supply a smart card to use BitLocker.").SetCode(0x80310074);
                         case 0x80310086: // FVE_E_POLICY_PROHIBITS_SELFSIGNED
-                            throw new InvalidOperationException("Group Policy does not permit the use of self - signed certificates.");
+                            throw new InvalidOperationException("Group Policy does not permit the use of self - signed certificates.").SetCode(0x80310086);
                        default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2285,11 +2288,11 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The ExternalKey parameter is provided but is not an array of size 4.");
+                            throw new InvalidOperationException("The ExternalKey parameter is provided but is not an array of size 4.").SetCode(0x80070057);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2339,9 +2342,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.");
+                            throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.").SetCode(0x80070057);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2385,25 +2388,25 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310040: // FVE_E_NOT_ALLOWED_IN_SAFE_MODE
-                            throw new InvalidOperationException("BitLocker Drive Encryption can only be used for recovery purposes when used in Safe Mode.");
+                            throw new InvalidOperationException("BitLocker Drive Encryption can only be used for recovery purposes when used in Safe Mode.").SetCode(0x80310040);
                         case 0x8031006A: // FVE_E_POLICY_PASSPHRASE_NOT_ALLOWED
-                            throw new InvalidOperationException("Group policy does not permit the creation of a passphrase.");
+                            throw new InvalidOperationException("Group policy does not permit the creation of a passphrase.").SetCode(0x8031006A);
                         case 0x8031006C: // FVE_E_FIPS_PREVENTS_PASSPHRASE
-                            throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.");
+                            throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.").SetCode(0x8031006C);
                         case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
-                            throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.");
+                            throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.").SetCode(0x80310080);
                         case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
-                            throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.");
+                            throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.").SetCode(0x80310081);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is already locked by BitLocker Drive Encryption.You must unlock the drive from Control Panel.");
+                            throw new InvalidOperationException("The volume is already locked by BitLocker Drive Encryption.You must unlock the drive from Control Panel.").SetCode(0x80310000);
                         case 0x80310024: // FVE_E_OVERLAPPED_UPDATE
-                            throw new InvalidOperationException("The control block for the encrypted volume was updated by another thread.");
+                            throw new InvalidOperationException("The control block for the encrypted volume was updated by another thread.").SetCode(0x80310024);
                         case 0x80310069: // FVE_E_KEY_PROTECTOR_NOT_SUPPORTED
-                            throw new InvalidOperationException("The key protector is not supported by the version of BitLocker Drive Encryption currently on the volume.");
+                            throw new InvalidOperationException("The key protector is not supported by the version of BitLocker Drive Encryption currently on the volume.").SetCode(0x80310069);
                         case 0x8031006D: // FVE_E_OS_VOLUME_PASSPHRASE_NOT_ALLOWED
-                            throw new InvalidOperationException("The passphrase cannot be added to the operating system volume.");
+                            throw new InvalidOperationException("The passphrase cannot be added to the operating system volume.").SetCode(0x8031006D);
                         case 0x80310030: // FVE_E_PROTECTOR_EXISTS
-                            throw new InvalidOperationException("The provided key protector already exists on this volume.");
+                            throw new InvalidOperationException("The provided key protector already exists on this volume.").SetCode(0x80310030);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2450,14 +2453,14 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80284008: // TBS_E_SERVICE_NOT_RUNNING
-                            throw new InvalidOperationException("No compatible TPM is found on this computer.");
+                            throw new InvalidOperationException("No compatible TPM is found on this computer.").SetCode(0x80284008);
                         case 0x80310023: // FVE_E_FOREIGN_VOLUME
-                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.");
+                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.").SetCode(0x80310023);
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The PlatformValidationProfile parameter is provided but its values are not within the known range,"
-                                                                + " or it does not match the Group Policy setting currently in effect.");
+                                                                + " or it does not match the Group Policy setting currently in effect.").SetCode(0x80070057);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2517,22 +2520,23 @@ namespace BitLockerManager
                             return;
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The PlatformValidationProfile parameter is provided, but its values are not within the known range, or "
-                                                                + "it does not match the Group Policy setting currently in effect.");
+                                                                + "it does not match the Group Policy setting currently in effect.").SetCode(0x80070057);
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
-                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
+                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.").SetCode(0x80310030);
                         case 0x80310023: // FVE_E_FOREIGN_VOLUME
-                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.");
+                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.").SetCode(0x80310023);
                         case 0x8031009A: // FVE_E_INVALID_PIN_CHARS
                             throw new InvalidOperationException(
-                                "The NewPIN parameter contains characters that are not valid.When the \"Allow enhanced PINs for startup\" Group Policy is disabled, only numbers are supported.");
+                                "The NewPIN parameter contains characters that are not valid.When the \"Allow enhanced PINs for startup\" Group Policy is disabled, only numbers are supported.").SetCode(0x8031009A);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310068: // FVE_E_POLICY_INVALID_PIN_LENGTH
-                            throw new InvalidOperationException("The NewPIN parameter supplied is either longer than 20 characters, shorter than 6 characters, or shorter than the minimum length specified by Group Policy.");
+                            throw new InvalidOperationException("The NewPIN parameter supplied is either longer than 20 characters, shorter than 6 characters, or shorter than the minimum "
+                                                                + "length specified by Group Policy.").SetCode(0x80310068);
                         case 0x80310031: // FVE_E_PROTECTOR_EXISTS
-                            throw new InvalidOperationException("A key protector of this type already exists.");
+                            throw new InvalidOperationException("A key protector of this type already exists.").SetCode(0x80310031);
                         case 0x80284008: // TBS_E_SERVICE_NOT_RUNNING
-                            throw new InvalidOperationException("No compatible TPM is found on this computer.");
+                            throw new InvalidOperationException("No compatible TPM is found on this computer.").SetCode(0x80284008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2600,23 +2604,23 @@ namespace BitLockerManager
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The PlatformValidationProfile parameter is provided, but its values are not within the known range, "
                                                                 + "or it does not match the Group Policy setting that is currently in effect. The ExternalKey parameter is provided but"
-                                                                + " it is not an array of size 32.");
+                                                                + " it is not an array of size 32.").SetCode(0x80070057);
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
-                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
+                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.").SetCode(0x80310030);
                         case 0x80310023: // FVE_E_FOREIGN_VOLUME
-                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.");
+                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.").SetCode(0x80310023);
                         case 0x8031009A: // FVE_E_INVALID_PIN_CHARS
                             throw new InvalidOperationException("The NewPIN parameter contains characters that are not valid.When the \"Allow enhanced PINs for startup\""
-                                                                + " Group Policy is disabled, only numbers are supported.");
+                                                                + " Group Policy is disabled, only numbers are supported.").SetCode(0x8031009A);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310068: // FVE_E_POLICY_INVALID_PIN_LENGTH
                             throw new InvalidOperationException("The NewPIN parameter supplied is either longer than 20 characters, shorter than 4 characters, or shorter than the "
-                                                                + "minimum length specified by Group Policy.");
+                                                                + "minimum length specified by Group Policy.").SetCode(0x80310068);
                         case 0x80310031: // FVE_E_PROTECTOR_EXISTS
-                            throw new InvalidOperationException("A key protector of this type already exists.");
+                            throw new InvalidOperationException("A key protector of this type already exists.").SetCode(0x80310031);
                         case 0x80284008: // TBS_E_SERVICE_NOT_RUNNING
-                            throw new InvalidOperationException("No compatible TPM is found on this computer.");
+                            throw new InvalidOperationException("No compatible TPM is found on this computer.").SetCode(0x80284008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2677,18 +2681,18 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80284008: // TBS_E_SERVICE_NOT_RUNNING
-                            throw new InvalidOperationException("No compatible TPM is found on this computer.");
+                            throw new InvalidOperationException("No compatible TPM is found on this computer.").SetCode(0x80284008);
                         case 0x80310023: // FVE_E_FOREIGN_VOLUME
-                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.");
+                            throw new InvalidOperationException("The TPM cannot secure the volume's encryption key because the volume does not contain the currently running operating system.").SetCode(0x80310023);
                         case 0x80070057: // E_INVALIDARG
                             throw new InvalidOperationException("The PlatformValidationProfile parameter is provided, but its values are not within the known range, or it does not match"
-                                                                + " the Group Policy setting currently in effect. The ExternalKey parameter is provided but is not an array of size 32.");
+                                                                + " the Group Policy setting currently in effect. The ExternalKey parameter is provided but is not an array of size 32.").SetCode(0x80070057);
                         case 0x80310030: // FVE_E_BOOTABLE_CDDVD
-                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.");
+                            throw new InvalidOperationException("A bootable CD / DVD is found in this computer.Remove the CD / DVD and restart the computer.").SetCode(0x80310030);
                         case 0x80310031: // FVE_E_PROTECTOR_EXISTS
-                            throw new InvalidOperationException("A key protector of this type already exists.");
+                            throw new InvalidOperationException("A key protector of this type already exists.").SetCode(0x80310031);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2760,13 +2764,13 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\" or \"TPM And Startup Key\".");
+                            throw new InvalidOperationException("The VolumeKeyProtectorID parameter does not refer to a key protector of the type \"External Key\" or \"TPM And Startup Key\".").SetCode(0x80070057);
                         case 0x80070003: // ERROR_PATH_NOT_FOUND
-                            throw new InvalidOperationException("The Path parameter does not refer to a valid location. Ensure that the file name is not included in the Path parameter.");
+                            throw new InvalidOperationException("The Path parameter does not refer to a valid location. Ensure that the file name is not included in the Path parameter.").SetCode(0x80070003);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2802,9 +2806,9 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.");
+                            throw new InvalidOperationException("This drive is locked by BitLocker Drive Encryption.You must unlock this volume from Control Panel.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2879,16 +2883,16 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x2: // ERROR_FILE_NOT_FOUND
-                            throw new InvalidOperationException("The system cannot file the specified file.");
+                            throw new InvalidOperationException("The system cannot file the specified file.").SetCode(0x2);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                            throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
+                            throw new InvalidOperationException("The volume cannot be unlocked with the provided information.").SetCode(0x80310027);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.").SetCode(0x80310033);
                         case 0x80310094: // FVE_E_PRIVATEKEY_AUTH_FAILED
                             throw new InvalidOperationException("The private key, associated with the specified certificate, could not be authorized.The private key "
-                                                                + "authorization was either not provided or the provided authorization was invalid.");
+                                                                + "authorization was either not provided or the provided authorization was invalid.").SetCode(0x80310094);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2929,14 +2933,14 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                            throw new InvalidOperationException("The volume cannot be unlocked by using the provided information.");
+                            throw new InvalidOperationException("The volume cannot be unlocked by using the provided information.").SetCode(0x80310027);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.").SetCode(0x80310033);
                         case 0x80310094: // FVE_E_PRIVATEKEY_AUTH_FAILED
                             throw new InvalidOperationException("The private key associated with the specified certificate could not be authorized.The private key authorization was either "
-                                                                + "not provided or the provided authorization was not valid.");
+                                                                + "not provided or the provided authorization was not valid.").SetCode(0x80310094);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -2972,13 +2976,13 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x00000490: // ERROR_NOT_FOUND
-                            throw new InvalidOperationException("The volume does not have a key protector of the type \"External Key\".");
+                            throw new InvalidOperationException("The volume does not have a key protector of the type \"External Key\".").SetCode(0x00000490);
                         case 0x00000056: // ERROR_INVALID_PASSWORD
-                            throw new InvalidOperationException("One or more key protectors of the type \"External Key\" exist, but the specified ExternalKey parameter cannot unlock the volume.");
+                            throw new InvalidOperationException("One or more key protectors of the type \"External Key\" exist, but the specified ExternalKey parameter cannot unlock the volume.").SetCode(0x00000056);
                         case 0x80070057: // E_INVALIDARG
-                            throw new InvalidOperationException("The ExternalKey parameter is not an array of size 4.");
+                            throw new InvalidOperationException("The ExternalKey parameter is not an array of size 4.").SetCode(0x80070057);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -3020,15 +3024,15 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
                             throw new InvalidOperationException("The volume does not have a key protector of the type \"Numerical Password\"."
-                                                                + "The NumericalPassword parameter has a valid format, but you cannot use a numerical password to unlock the volume.");
+                                                                + "The NumericalPassword parameter has a valid format, but you cannot use a numerical password to unlock the volume.").SetCode(0x80310033);
                         case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
                             throw new InvalidOperationException("The NumericalPassword parameter cannot unlock the volume. One or more key protectors of the type \"Numerical Password\" exist,"
-                                                                + " but the specified NumericalPassword parameter cannot unlock the volume.");
+                                                                + " but the specified NumericalPassword parameter cannot unlock the volume.").SetCode(0x80310027);
                         case 0x80310035: // FVE_E_INVALID_PASSWORD_FORMAT
-                            throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.");
+                            throw new InvalidOperationException("The NumericalPassword parameter does not have a valid format.").SetCode(0x80310035);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -3063,17 +3067,17 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         case 0x8031006C: // FVE_E_FIPS_PREVENTS_PASSPHRASE
-                            throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.");
+                            throw new InvalidOperationException("The group policy setting that requires FIPS compliance prevented the passphrase from being generated or used.").SetCode(0x8031006C);
                         case 0x80310080: // FVE_E_POLICY_INVALID_PASSPHRASE_LENGTH
-                            throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.");
+                            throw new InvalidOperationException("The passphrase provided does not meet the minimum or maximum length requirements.").SetCode(0x80310080);
                         case 0x80310081: // FVE_E_POLICY_PASSPHRASE_TOO_SIMPLE
-                            throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.");
+                            throw new InvalidOperationException("The passphrase does not meet the complexity requirements set by the administrator in group policy.").SetCode(0x80310081);
                         case 0x80310027: // FVE_E_FAILED_AUTHENTICATION
-                            throw new InvalidOperationException("The volume cannot be unlocked with the provided information.");
+                            throw new InvalidOperationException("The volume cannot be unlocked with the provided information.").SetCode(0x80310027);
                         case 0x80310033: // FVE_E_PROTECTOR_NOT_FOUND
-                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.");
+                            throw new InvalidOperationException("The provided key protector does not exist on the volume. You must enter another key protector.").SetCode(0x80310033);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }
@@ -3104,11 +3108,11 @@ namespace BitLockerManager
                         case 0: // S_OK
                             return;
                         case 0xCCD802F: // E_INVALIDARG
-                            throw new InvalidOperationException("One or more of the arguments are not valid.");
+                            throw new InvalidOperationException("One or more of the arguments are not valid.").SetCode(0xCCD802F);
                         case 0x80310000: // FVE_E_LOCKED_VOLUME
-                            throw new InvalidOperationException("The volume is locked.");
+                            throw new InvalidOperationException("The volume is locked.").SetCode(0x80310000);
                         case 0x80310008: // FVE_E_NOT_ACTIVATED
-                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.");
+                            throw new InvalidOperationException("BitLocker is not enabled on the volume.Add a key protector to enable BitLocker.").SetCode(0x80310008);
                         default:
                             throw new InvalidOperationException(string.Format(CultureInfo.InvariantCulture, "Unknown code {0:X}.", result));
                     }

@@ -71,6 +71,7 @@
     <Compile Include="Enums\TestError.cs" />
     <Compile Include="Enums\TestStatus.cs" />
     <Compile Include="Enums\WipingStatus.cs" />
+    <Compile Include="ExceptionHelper.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
